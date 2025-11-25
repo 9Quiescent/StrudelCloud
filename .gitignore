@@ -1,0 +1,11 @@
+# Visual Studio
+.vs/
+*.user
+
+# (.NET build outputs)
+**/bin/
+**/obj/
+
+# (React build outputs & dependencies)
+StrudelWebApp/ClientApp/node_modules/
+StrudelWebApp/ClientApp/dist/

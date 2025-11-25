@@ -1,0 +1,199 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Yeah, I kinda like jet set radio, it's a thing. */
+:root {
+    --jsr-accent: #00e676; /* neon limeish colour */
+    --jsr-accent-dark: #00c853; /* deeper lime */
+    --jsr-ink: #101417; /* inky text */
+    --jsr-bg: #f7faf9; /* soft page bg */
+    --jsr-soft: #e9f7f0; /* pale accent wash */
+}
+
+body {
+    background: var(--jsr-bg);
+}
+
+.jsr-title {
+    display: inline-block;
+    font-weight: 800;
+    letter-spacing: .3px;
+    color: var(--jsr-ink);
+    background: linear-gradient(180deg,#fff, var(--jsr-soft));
+    border: 2px solid var(--jsr-accent);
+    border-radius: 14px;
+    padding: .35rem .85rem;
+    box-shadow: 0 4px 0 0 var(--jsr-accent-dark), 0 0 0 4px #fff inset;
+}
+
+.btn.jsr {
+    --bs-btn-color: var(--jsr-ink);
+    --bs-btn-border-color: var(--jsr-accent);
+    --bs-btn-hover-border-color: var(--jsr-accent-dark);
+    --bs-btn-hover-bg: var(--jsr-soft);
+    --bs-btn-active-bg: var(--jsr-accent);
+    --bs-btn-active-border-color: var(--jsr-accent-dark);
+    border-width: 2px;
+    border-radius: 14px;
+    box-shadow: 0 3px 0 0 var(--jsr-accent);
+    transition: transform .06s ease, box-shadow .06s ease;
+}
+
+    .btn.jsr:disabled {
+        opacity: .55;
+        box-shadow: none;
+    }
+
+    .btn.jsr:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn.jsr:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 0 0 var(--jsr-accent-dark);
+    }
+
+.card.jsr-card {
+    border: 2px solid var(--jsr-soft);
+    border-radius: 16px;
+}
+
+    .card.jsr-card .card-header {
+        background: linear-gradient(180deg,#fff, var(--jsr-soft));
+        border-bottom: 2px solid var(--jsr-soft);
+        font-weight: 600;
+    }
+
+.form-range::-webkit-slider-thumb {
+    background: var(--jsr-accent);
+}
+
+.form-range::-moz-range-thumb {
+    background: var(--jsr-accent);
+}
+
+
+.form-check-input:checked {
+    background-color: var(--jsr-accent);
+    border-color: var(--jsr-accent);
+}
+
+[data-host="strudel"] {
+    border: 2px dashed var(--jsr-soft) !important;
+    border-radius: 16px !important;
+    background: #fff;
+}
+#strudel-editor .cm-content {
+    white-space: pre-wrap !important; 
+    overflow-wrap: anywhere !important; 
+    word-break: break-word !important;
+}
+
+#strudel-editor .cm-scroller {
+    overflow-x: clip !important;
+    overflow-y: auto; 
+}
+
+#strudel-editor .cm-editor {
+    height: 380px; 
+}
+
+.form-check-input {
+    accent-color: var(--jsr-accent);
+}
+
+    .form-check-input:checked {
+        background-color: var(--jsr-accent);
+        border-color: var(--jsr-accent);
+    }
+
+    .form-check-input:focus {
+        border-color: var(--jsr-accent);
+        box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
+    }
+
+/* Range slider knob = green */
+input[type="range"].form-range::-webkit-slider-thumb {
+    background: var(--jsr-accent) !important;
+    border: 2px solid var(--jsr-accent-dark);
+}
+
+    input[type="range"].form-range::-webkit-slider-thumb:active {
+        background: var(--jsr-accent-dark) !important;
+    }
+
+input[type="range"].form-range::-moz-range-thumb {
+    background: var(--jsr-accent) !important;
+    border: 2px solid var(--jsr-accent-dark);
+}
+
+/* Text inputs/selects focus ring = green */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--jsr-accent);
+    box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
+}
+
+/* Optional: make the select caret feel less “Bootstrap blue” on focus */
+.form-select {
+    --bs-form-select-focus-border-color: var(--jsr-accent);
+    --bs-form-select-focus-box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
+}
+
+/* Force green when selected (checkboxes, radios, and switches) */
+.form-check-input[type="radio"]:checked,
+.form-check-input[type="checkbox"]:checked {
+    background-color: var(--jsr-accent) !important;
+    border-color: var(--jsr-accent) !important;
+}
+
+/* Bootstrap switch variant */
+.form-switch .form-check-input:checked {
+    background-color: var(--jsr-accent) !important;
+    border-color: var(--jsr-accent) !important;
+}
+
+/* Keep the same green ring for both */
+.form-check-input[type="radio"]:focus,
+.form-check-input[type="checkbox"]:focus {
+    border-color: var(--jsr-accent);
+    box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
+}
+

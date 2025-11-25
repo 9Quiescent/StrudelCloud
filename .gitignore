@@ -7,5 +7,5 @@
 **/obj/
 
 # (React build outputs & dependencies)
-StrudelWebApp/ClientApp/node_modules/
-StrudelWebApp/ClientApp/dist/
+StrudelWebApp/strudel_reactor/node_modules/
+StrudelWebApp/strudel_reactor/dist/

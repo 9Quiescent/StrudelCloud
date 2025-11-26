@@ -1,17 +1,30 @@
+// Keeping track of defaults so db can reflect merged results (before and after save)
+export const defaultControls = {
+    cps: "120/60/4",                       // bpm/spm/bpc
+    room: 0.2,
+    gain: 1.2,
+    muteDrums: false,
+    drumsPattern: "bd sd [~ bd] sd, hh*16",
+    p1Hushed: false,
+    synth: "gm_piano:0",
+};
+
 export function preprocessSong(raw, controls = {}) {
     if (!raw) return "";
 
-    const cps = controls.cps ?? controls.tempo ?? "120/60/4"; //bpm/spm/bpc
-    const room = controls.room ?? 0.2;
-    const gain = controls.gain ?? 1.2;
-    const muteDrums = controls.muteDrums ?? controls.drumsMuted ?? false;
-    const drumsPattern = controls.drumsPattern ?? 'bd sd [~ bd] sd, hh*16';
-    const p1Hushed = controls.p1Hushed ?? false;
-    const synth = controls.synth ?? "gm_piano:0";
+    // Merge defaults + overrides once, then and only then proceed to destructure
+    const merged = { ...defaultControls, ...controls };
+
+    const cps = merged.cps;
+    const room = merged.room;
+    const gain = merged.gain;
+    const muteDrums = merged.muteDrums;
+    const drumsPattern = merged.drumsPattern;
+    const p1Hushed = merged.p1Hushed;
+    const synth = merged.synth;
 
     let out = String(raw);
 
-    // placeholders
     out = out.replaceAll("<p1_Radio>", p1Hushed ? "_" : "");
     out = out.replaceAll("<DRUMS>", muteDrums ? "~" : drumsPattern);
     out = out.replaceAll("<CPS>", String(cps));

@@ -10,19 +10,19 @@ I have also made serveral quality of life additions, E.g, being able to search f
 and no longer being bound to OS specific file explorer APIs.
 
 # Prerequisites
-# .NET 8 SDK
+.NET 8 SDK
 https://dotnet.microsoft.com/en-us/download
 
-# Visual Studio 2022 (or newer) with ASP.NET and web development workload
+Visual Studio 2022 (or newer) with ASP.NET and web development workload
 
-# SQL Server Express (or any SQL Server ver)
+SQL Server Express (or any SQL Server ver)
 
-# Node.js and npm (for the React app). I would recommend Node 18 LTS or newer
+Node.js and npm (for the React app). I would recommend Node 18 LTS or newer
 https://nodejs.org/
 
-# A compatible DBMS
+A compatible DBMS
 
-# A compatible browser (E.g Edge, Chrome)
+A compatible browser (E.g Edge, Chrome)
 
 # Database Setup
 Load and save depend on a database that is structured correctly. Do the following.

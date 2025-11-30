@@ -1,22 +1,47 @@
 import { useEffect, useState } from "react";
 import { useStrudel } from "../context/StrudelProvider";
 
+// Enforce CPS as int/int/int 
+const CPS_REGEX = /^\d+\/\d+\/\d+$/;
+
 export default function ControlsPanel() {
     const { controls, setControls, started } = useStrudel();
 
-    // These keep track of local slider/text states
+    // These track local slider/text states
     const [roomLocal, setRoomLocal] = useState(controls.room ?? 0.2);
     const [gainLocal, setGainLocal] = useState(controls.gain ?? 1.2);
-    const [tempoLocal, setTempoLocal] = useState(controls.tempo ?? "120/60/4");
+    const initialCps = controls.cps ?? "120/60/4";
+    const [tempoLocal, setTempoLocal] = useState(initialCps);
+    const [lastValidTempo, setLastValidTempo] = useState(initialCps);
 
-    // These keep locals in sync if controls change from elsewhere (for example, load settings)
+    // These sync the locals 
     useEffect(() => { setRoomLocal(controls.room ?? 0.2); }, [controls.room]);
     useEffect(() => { setGainLocal(controls.gain ?? 1.2); }, [controls.gain]);
-    useEffect(() => { setTempoLocal(controls.tempo ?? "120/60/4"); }, [controls.tempo]);
+    useEffect(() => {
+        const cps = controls.cps ?? "120/60/4";
+        setTempoLocal(cps);
+        setLastValidTempo(cps);
+    }, [controls.cps]);
 
     const commitRoom = () => setControls({ room: Number(roomLocal) });
     const commitGain = () => setControls({ gain: Number(gainLocal) });
-    const commitTempo = () => setControls({ tempo: String(tempoLocal) });
+
+    const commitTempo = () => {
+        const value = String(tempoLocal).trim();
+
+        if (!CPS_REGEX.test(value)) {
+            alert(
+                "CPS must be in the format int/int/int\n" +
+                "For example: 120/60/4"
+            );
+            // revert back to last valid CPS value if its invalid
+            setTempoLocal(lastValidTempo);
+            return;
+        }
+
+        setLastValidTempo(value);
+        setControls({ cps: value });
+    };
 
     const onTempoKeyUp = (e) => {
         if (e.key === "Enter") commitTempo();
@@ -44,7 +69,7 @@ export default function ControlsPanel() {
                         type="radio"
                         name="p1"
                         id="p1_hush"
-                        checked={controls.p1Hushed}
+                        checked={!!controls.p1Hushed}
                         onChange={() => setControls({ p1Hushed: true })}
                     />
                     <label className="form-check-label" htmlFor="p1_hush">Add Hushes</label>
@@ -105,8 +130,8 @@ export default function ControlsPanel() {
                     className="form-check-input"
                     type="checkbox"
                     id="drumsMuted"
-                    checked={!!controls.drumsMuted}
-                    onChange={(e) => setControls({ drumsMuted: e.target.checked })}
+                    checked={!!controls.muteDrums}
+                    onChange={(e) => setControls({ muteDrums: e.target.checked })}
                 />
                 <label className="form-check-label" htmlFor="drumsMuted">Mute drums</label>
             </div>
@@ -125,7 +150,11 @@ export default function ControlsPanel() {
                 </select>
             </div>
 
-            {!started && <small className="text-muted">Audio is prepping, controls will take effect shortly…</small>}
+            {!started && (
+                <small className="text-muted">
+                    Loading Audio…
+                </small>
+            )}
         </div>
     );
 }

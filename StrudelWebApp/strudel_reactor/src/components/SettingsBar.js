@@ -1,21 +1,46 @@
 import { useRef } from "react";
 import { useStrudel } from "../context/StrudelProvider";
-import { defaultControls } from "../utils/preprocess"; 
+import { defaultControls } from "../utils/preprocess";
+
+const API_BASE_URL = "http://localhost:5138"; // for marker, adjust this to your port
+
+// Enforce CPS as int/int/int (e.g. 120/60/4)
+const CPS_REGEX = /^\d+\/\d+\/\d+$/;
 
 export default function SettingsBar() {
     const { raw, setRaw, controls, setControls } = useStrudel();
     const fileRef = useRef(null);
 
-    const API_BASE_URL = "http://localhost:5138"; // for marker, adjust this to your port
-
     const onSave = async () => {
         const name = window.prompt("Name this preset:");
         if (!name) return;
 
-        // Merge shared defaults + current overrides
-        const effectiveControls = { ...defaultControls, ...controls };
+        // CPS that preprocessSong uses
+        const cpsValue = String(
+            controls.cps ??
+            defaultControls.cps
+        );
 
-        console.log("effectiveControls before save:", effectiveControls);
+        if (!CPS_REGEX.test(cpsValue)) {
+            alert(
+                "CPS must be in the format int/int/int\n" +
+                "For example: 120/60/4"
+            );
+            return;
+        }
+
+        // snapshot of settings for save
+        const presetControls = {
+            cps: cpsValue,
+            room: controls.room ?? defaultControls.room,
+            gain: controls.gain ?? defaultControls.gain,
+            muteDrums: controls.muteDrums ?? defaultControls.muteDrums,
+            drumsPattern: controls.drumsPattern ?? defaultControls.drumsPattern,
+            p1Hushed: controls.p1Hushed ?? defaultControls.p1Hushed,
+            synth: controls.synth ?? defaultControls.synth,
+        };
+
+        console.log("presetControls before save:", presetControls);
 
         try {
             const res = await fetch(`${API_BASE_URL}/api/StrudelPreset`, {
@@ -24,7 +49,7 @@ export default function SettingsBar() {
                 body: JSON.stringify({
                     name,
                     raw,
-                    controlsJson: JSON.stringify(effectiveControls),
+                    controlsJson: JSON.stringify(presetControls),
                 }),
             });
 
@@ -49,9 +74,12 @@ export default function SettingsBar() {
             const text = await file.text();
             const data = JSON.parse(text);
             if (typeof data.raw === "string") setRaw(data.raw);
-            if (data.controls && typeof data.controls === "object") setControls(data.controls);
+            if (data.controls && typeof data.controls === "object") {
+                setControls(data.controls);
+            }
         } finally {
-            e.target.value = ""; // needed to allow re-selecting the same file
+            // Needed to allow re-selecting the same file name again
+            e.target.value = "";
         }
     };
 

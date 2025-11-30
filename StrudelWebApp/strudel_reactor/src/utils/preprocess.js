@@ -1,4 +1,6 @@
-// Keeping track of defaults so db can reflect merged results (before and after save)
+// utils/preprocess.js
+
+// Single source of truth for control defaults
 export const defaultControls = {
     cps: "120/60/4",                       // bpm/spm/bpc
     room: 0.2,
@@ -12,16 +14,33 @@ export const defaultControls = {
 export function preprocessSong(raw, controls = {}) {
     if (!raw) return "";
 
-    // Merge defaults + overrides once, then and only then proceed to destructure
-    const merged = { ...defaultControls, ...controls };
+    const cps =
+        controls.cps ??
+        defaultControls.cps;
 
-    const cps = merged.cps;
-    const room = merged.room;
-    const gain = merged.gain;
-    const muteDrums = merged.muteDrums;
-    const drumsPattern = merged.drumsPattern;
-    const p1Hushed = merged.p1Hushed;
-    const synth = merged.synth;
+    const room =
+        controls.room ??
+        defaultControls.room;
+
+    const gain =
+        controls.gain ??
+        defaultControls.gain;
+
+    const muteDrums =
+        controls.muteDrums ??
+        defaultControls.muteDrums;
+
+    const drumsPattern =
+        controls.drumsPattern ??
+        defaultControls.drumsPattern;
+
+    const p1Hushed =
+        controls.p1Hushed ??
+        defaultControls.p1Hushed;
+
+    const synth =
+        controls.synth ??
+        defaultControls.synth;
 
     let out = String(raw);
 

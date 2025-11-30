@@ -152,7 +152,7 @@ export default function ControlsPanel() {
 
             {!started && (
                 <small className="text-muted">
-                    Loading Audio…
+                    Loading Audio...
                 </small>
             )}
         </div>

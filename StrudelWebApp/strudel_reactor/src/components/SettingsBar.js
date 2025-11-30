@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStrudel } from "../context/StrudelProvider";
 import { defaultControls } from "../utils/preprocess";
+import JsrModal from "./JsrModal";
 
 const API_BASE_URL = "http://localhost:5138"; // for marker, adjust this to your port
 
@@ -16,10 +17,49 @@ export default function SettingsBar() {
     const [isLoadingPresets, setIsLoadingPresets] = useState(false);
     const [loadError, setLoadError] = useState("");
 
-    const onSave = async () => {
-        const name = window.prompt("Name this preset:");
-        if (!name) return;
+    // search state for presets
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
 
+    // UI modal for messages + confirms
+    const [uiModal, setUiModal] = useState({
+        kind: null,
+        title: "",
+        body: "",
+        onConfirm: null,
+    });
+
+    // Name input modal for save
+    const [showNameModal, setShowNameModal] = useState(false);
+    const [presetName, setPresetName] = useState("");
+
+    const openMessageModal = (title, body) => {
+        setUiModal({ kind: "message", title, body, onConfirm: null });
+    };
+
+    const openConfirmModal = (title, body, onConfirm) => {
+        setUiModal({ kind: "confirm", title, body, onConfirm });
+    };
+
+    const closeUiModal = () => {
+        setUiModal((prev) => ({ ...prev, kind: null, onConfirm: null }));
+    };
+
+    const handleConfirmYes = () => {
+        if (uiModal.onConfirm) {
+            uiModal.onConfirm();
+        }
+        closeUiModal();
+    };
+
+    // Open modal to name the preset
+    const beginSave = () => {
+        setPresetName("");
+        setShowNameModal(true);
+    };
+
+    // only if the user has provided a preset name in the modal, perform the save
+    const performSave = async (name) => {
         // CPS that preprocessSong uses
         const cpsValue = String(
             controls.cps ??
@@ -27,9 +67,9 @@ export default function SettingsBar() {
         );
 
         if (!CPS_REGEX.test(cpsValue)) {
-            alert(
-                "CPS must be in the format int/int/int\n" +
-                "For example: 120/60/4"
+            openMessageModal(
+                "Invalid CPS",
+                "CPS must be in the format int/int/int\nFor example: 120/60/4"
             );
             return;
         }
@@ -63,11 +103,28 @@ export default function SettingsBar() {
                 throw new Error(`Failed to save preset: ${res.status} ${text}`);
             }
 
-            alert("Preset saved to database.");
+            openMessageModal("Preset Saved", "Preset saved to database.");
         } catch (err) {
             console.error(err);
-            alert("Error saving preset, check console for details.");
+            openMessageModal(
+                "Save Error",
+                "Error saving preset, check browser console for details."
+            );
         }
+    };
+
+    const handleNameSave = () => {
+        const trimmed = presetName.trim();
+        if (!trimmed) {
+            return;
+        }
+        setShowNameModal(false);
+        performSave(trimmed);
+    };
+
+    const closeNameModal = () => {
+        setShowNameModal(false);
+        setPresetName("");
     };
 
     // --- Load from DB Stuff ---
@@ -76,6 +133,7 @@ export default function SettingsBar() {
         setShowDbModal(true);
         setIsLoadingPresets(true);
         setLoadError("");
+        setSearchTerm(""); // reset search when opening modal
 
         try {
             const res = await fetch(`${API_BASE_URL}/api/StrudelPreset`);
@@ -96,14 +154,43 @@ export default function SettingsBar() {
     const closeDbModal = () => {
         setShowDbModal(false);
         setLoadError("");
+        setSearchTerm("");
     };
 
-    const handlePresetClick = async (id) => {
-        const confirmOverride = window.confirm(
-            "Loading this preset will overwrite your current song and settings. Continue?"
-        );
-        if (!confirmOverride) return;
+    // search by name 
+    const handleSearch = async () => {
+        const term = searchTerm.trim();
+        setIsSearching(true);
+        setLoadError("");
 
+        try {
+            const url = term
+                ? `${API_BASE_URL}/api/StrudelPreset/search?q=${encodeURIComponent(term)}`
+                : `${API_BASE_URL}/api/StrudelPreset`;
+
+            const res = await fetch(url);
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Failed to search presets: ${res.status} ${text}`);
+            }
+
+            const data = await res.json();
+            setPresets(data);
+        } catch (err) {
+            console.error(err);
+            setLoadError("Error searching presets from database.");
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const onSearchKeyUp = (e) => {
+        if (e.key === "Enter") {
+            handleSearch();
+        }
+    };
+
+    const actuallyLoadPreset = async (id) => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/StrudelPreset/${id}`);
             if (!res.ok) {
@@ -126,15 +213,36 @@ export default function SettingsBar() {
                     }
                 } catch (parseErr) {
                     console.error("Failed to parse controlsJson:", parseErr);
-                    alert("Preset loaded, but controls JSON could not be parsed.");
+                    openMessageModal(
+                        "Load Warning",
+                        "Preset loaded, but controls JSON could not be parsed."
+                    );
                 }
             }
 
             setShowDbModal(false);
+
+            openMessageModal(
+                "Preset Loaded",
+                preset.name
+                    ? `Preset "${preset.name}" loaded from database.`
+                    : "Preset loaded from database."
+            );
         } catch (err) {
             console.error(err);
-            alert("Error loading preset from database. Check console for details.");
+            openMessageModal(
+                "Load Error",
+                "Error loading preset from database. Check console for details."
+            );
         }
+    };
+
+    const handlePresetClick = (id) => {
+        openConfirmModal(
+            "Load Preset",
+            "Loading this preset will overwrite your current song and settings. Proceed?",
+            () => actuallyLoadPreset(id)
+        );
     };
 
     return (
@@ -149,7 +257,7 @@ export default function SettingsBar() {
                         </span>
                     </div>
                     <div className="d-flex gap-2">
-                        <button type="button" className="btn jsr" onClick={onSave}>
+                        <button type="button" className="btn jsr" onClick={beginSave}>
                             <strong>SAVE</strong> to DB
                         </button>
                         <button type="button" className="btn jsr" onClick={openDbModal}>
@@ -159,72 +267,162 @@ export default function SettingsBar() {
                 </div>
             </div>
 
-            {/*  Bootstrap modal for DB presets */}
-            {showDbModal && (
-                <>
-                    <div className="modal fade show d-block" tabIndex="-1" role="dialog">
-                        <div className="modal-dialog" role="document">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Load Preset from Database</h5>
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        onClick={closeDbModal}
-                                        aria-label="Close"
-                                    ></button>
-                                </div>
-                                <div className="modal-body">
-                                    {isLoadingPresets && (
-                                        <p className="text-muted mb-0">Loading presets...</p>
-                                    )}
-
-                                    {loadError && (
-                                        <p className="text-danger mb-2">{loadError}</p>
-                                    )}
-
-                                    {!isLoadingPresets && !loadError && presets.length === 0 && (
-                                        <p className="text-muted mb-0">
-                                            No presets found yet. Try saving one first.
-                                        </p>
-                                    )}
-
-                                    {!isLoadingPresets && presets.length > 0 && (
-                                        <div className="list-group">
-                                            {presets.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    type="button"
-                                                    className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                                                    onClick={() => handlePresetClick(p.id)}
-                                                >
-                                                    <span>{p.name}</span>
-                                                    <small className="text-muted">
-                                                        {p.createdAt
-                                                            ? new Date(p.createdAt).toLocaleString()
-                                                            : ""}
-                                                    </small>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="modal-footer">
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={closeDbModal}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            {/* DB presets modal */}
+            <JsrModal
+                show={showDbModal}
+                title="Load an existing Preset"
+                onClose={closeDbModal}
+                footer={
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={closeDbModal}
+                    >
+                        Close
+                    </button>
+                }
+            >
+                {/* search bar */}
+                <div className="mb-3">
+                    <label htmlFor="presetSearch" className="form-label">
+                        Search by name
+                    </label>
+                    <div className="input-group">
+                        <input
+                            id="presetSearch"
+                            className="form-control"
+                            placeholder="e.g. default, chill, breakbeat"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyUp={onSearchKeyUp}
+                        />
+                        <button
+                            type="button"
+                            className="btn jsr"
+                            onClick={handleSearch}
+                        >
+                            Search
+                        </button>
                     </div>
-                    {/* Backdrop */}
-                    <div className="modal-backdrop fade show"></div>
-                </>
-            )}
+                    <small className="text-muted">
+                        Leave empty and press Search to reset the list.
+                    </small>
+                </div>
+
+                {(isLoadingPresets || isSearching) && (
+                    <p className="text-muted mb-0">Loading presets...</p>
+                )}
+
+                {loadError && (
+                    <p className="text-danger mb-2">{loadError}</p>
+                )}
+
+                {!isLoadingPresets && !isSearching && !loadError && presets.length === 0 && (
+                    <p className="text-muted mb-0">
+                        No presets found yet. Try saving one first.
+                    </p>
+                )}
+
+                {!isLoadingPresets && !isSearching && presets.length > 0 && (
+                    <div className="list-group">
+                        {presets.map((p) => (
+                            <button
+                                key={p.id}
+                                type="button"
+                                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                onClick={() => handlePresetClick(p.id)}
+                            >
+                                <span>{p.name}</span>
+                                <small className="text-muted">
+                                    {p.createdAt
+                                        ? new Date(p.createdAt).toLocaleString()
+                                        : ""}
+                                </small>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </JsrModal>
+
+            {/* Name prset modal  */}
+            <JsrModal
+                show={showNameModal}
+                title="Save Preset"
+                onClose={closeNameModal}
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            className="btn btn-secondary"
+                            onClick={closeNameModal}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="button"
+                            className="btn jsr"
+                            onClick={handleNameSave}
+                        >
+                            Save
+                        </button>
+                    </>
+                }
+            >
+                <div className="mb-3">
+                    <label htmlFor="presetName" className="form-label">
+                        Preset name
+                    </label>
+                    <input
+                        id="presetName"
+                        className="form-control"
+                        value={presetName}
+                        onChange={(e) => setPresetName(e.target.value)}
+                        placeholder="e.g. Default Beat"
+                    />
+                    <small className="text-muted">
+                        Note: You'll be able to search for this preset by this name in the preset list, then load it in if you tap the load button.
+                    </small>
+                </div>
+            </JsrModal>
+
+            {/* modal for message + confirm */}
+            <JsrModal
+                show={uiModal.kind !== null}
+                title={uiModal.title}
+                onClose={closeUiModal}
+                footer={
+                    uiModal.kind === "confirm" ? (
+                        <>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={closeUiModal}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="btn jsr"
+                                onClick={handleConfirmYes}
+                            >
+                                Yes, load preset
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            type="button"
+                            className="btn jsr"
+                            onClick={closeUiModal}
+                        >
+                            OK
+                        </button>
+                    )
+                }
+            >
+                <p className="mb-0" style={{ whiteSpace: "pre-line" }}>
+                    {uiModal.body}
+                </p>
+            </JsrModal>
         </>
     );
 }

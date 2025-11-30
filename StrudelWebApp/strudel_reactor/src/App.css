@@ -171,7 +171,7 @@ input[type="range"].form-range::-moz-range-thumb {
     box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
 }
 
-/* Optional: make the select caret feel less “Bootstrap blue” on focus */
+/* Option based/select Controls: make the select caret feel less “Bootstrap blue” when it focuses */
 .form-select {
     --bs-form-select-focus-border-color: var(--jsr-accent);
     --bs-form-select-focus-box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
@@ -195,5 +195,39 @@ input[type="range"].form-range::-moz-range-thumb {
 .form-check-input[type="checkbox"]:focus {
     border-color: var(--jsr-accent);
     box-shadow: 0 0 0 .25rem rgba(0, 230, 118, .25);
+}
+
+.jsr-modal-fade .modal-dialog {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: jsr-modal-in 0.18s ease-out forwards;
+}
+
+@keyframes jsr-modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* moda fade-in */
+.jsr-backdrop-fade {
+    opacity: 0;
+    animation: jsr-backdrop-in 0.18s ease-out forwards;
+}
+
+@keyframes jsr-backdrop-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.5; 
+    }
 }
 

@@ -61,24 +61,40 @@ namespace StrudelWebApp.Controllers
             return Ok(list);
         }
 
-        // GET: /api/StrudelPreset/5
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        // GET: /api/StrudelPreset/search?q=default
+        // Returns presets whose name contains the given search term
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchByName([FromQuery] string q)
         {
-            var preset = await _db.StrudelPresets.FindAsync(id); //grab the entry from the StrudelPresets relation with the specified id
-            if (preset == null) //if we have no preset with that id
+            // if no term is provided, just fall back to the same list as GetAll
+            if (string.IsNullOrWhiteSpace(q))
             {
-                return NotFound(); //return not found
+                var all = await _db.StrudelPresets
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Name,
+                        p.CreatedAt
+                    })
+                    .ToListAsync();
+
+                return Ok(all);
             }
 
-            return Ok(new
-            {
-                preset.Id,
-                preset.Name,
-                preset.RawCode,
-                preset.ControlsJson,
-                preset.CreatedAt
-            }); //otherwise, return the requested entry
+            var term = q.Trim();
+            var results = await _db.StrudelPresets
+                .Where(p => p.Name.Contains(term)) 
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Name,
+                    p.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(results);
         }
     }
 

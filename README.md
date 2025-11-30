@@ -1,4 +1,4 @@
-#What is this?#
+# What is this?
 This iteration of this project is a small ASP.NET Core MVC web application that contains a React app using the Strudel library.
 Essentially, by following the strudel library syntax, you're able to create music with code. This is supported by a uniform preprocessing logic.
 There are various DJ controls that allow you to manipulate the overall sound of the song (preset). 
@@ -9,22 +9,22 @@ This lets store and load send and recieve presets from a simple SQL database.
 I have also made serveral quality of life additions, E.g, being able to search for the specific preset due to the feature now being backed into the app,
 and no longer being bound to OS specific file explorer APIs.
 
-#Prerequisites#
-#.NET 8 SDK#
+# Prerequisites
+# .NET 8 SDK
 https://dotnet.microsoft.com/en-us/download
 
-Visual Studio 2022 (or newer) with ASP.NET and web development workload
+# Visual Studio 2022 (or newer) with ASP.NET and web development workload
 
-SQL Server Express (or any SQL Server ver)
+# SQL Server Express (or any SQL Server ver)
 
-Node.js and npm (for the React app). I would recommend Node 18 LTS or newer
+# Node.js and npm (for the React app). I would recommend Node 18 LTS or newer
 https://nodejs.org/
 
-A compatible DBMS
+# A compatible DBMS
 
-A compatible browser (E.g Edge, Chrome)
+# A compatible browser (E.g Edge, Chrome)
 
-#Database Setup#
+# Database Setup
 Load and save depend on a database that is structured correctly. Do the following.
 
 Create a databse in your DBMS of choice. Call it "StudelDB".
@@ -40,7 +40,7 @@ CREATE TABLE [dbo].[StrudelPresets]
 [CreatedAt] DATETIME2 NOT NULL
 );
 
-#Connection String#
+# The Connection String
 
 Once the DB is created and you were able to successfully run the table creation sql,
 Open your copy of Visual Studio 2022, and clone this repo. Ensure the solution runs and you're able to navigate through the directory.
@@ -48,7 +48,7 @@ Open your copy of Visual Studio 2022, and clone this repo. Ensure the solution r
 As soon as you do, go to StrudelWebApp/appsettings.json, change the string in "ConnectionStrings", specifically associated to "DefaultConnection".
 Have it point to the server (Typically your local machine) that contains the Database you created .
 
-#Running the app#
+# Running the app
 
 Open two powershell instances. One for running the .NET backend needed for the end points, a second needed for running the react frontend.
 
@@ -70,10 +70,10 @@ Run "npm start" let the development environment set up and run inside your prefe
 
 Enjoy the app.
 
-#Debugging#
+# Debugging
 I have left several console logs within the code that'll ideally help by giving enough information to solve any connection based issues. This project is feature complete.
 
-#Copyright#
+# Copyright
 I, Dennis Kalongonda, own nothing, please don't send me to jail!
 
 

@@ -28,7 +28,7 @@ A compatible browser (E.g Edge, Chrome)
 Load and save depend on a database that is structured correctly. To have this, do the following:
 1) Open your database management system of choice
 
-2) Create a database in your DBMS of choice. Call it "StudelDB".
+2) Create a database in your DBMS of choice. Call it "StrudelDB".
 
 3) Within that database instance, create a new query, and run this table creation sql:
 
